@@ -1,0 +1,201 @@
+﻿@model IEnumerable<Client.ViewModels.SupplierVM>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Index</h2>
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal">
+    Create
+</button>
+
+<hr />
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+            </td>
+        </tr>
+    }
+
+</table>
+
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Create</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" hidden>
+                    <label class="control-label col-md-2">Id</label>
+                    <div class="col-md-10">
+                        <input type="text" id="id" name="Id" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">Name</label>
+                    <div class="col-md-10">
+                        <input type="text" id="name" name="Name" class="form-control" hidden />
+                    </div>
+                </div>
+            </div>
+            <div>
+                <table id="tblStudent" class="table table-bordered table-striped table-responsive table-hover">
+                    <thead>
+                        <tr>
+                            <th align="left" class="productth">Student Name</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="Submit()" class="btn btn-primary">Add New</button>
+                <button type="button" onclick="Edit()" class="btn btn-primary">Save Changes</button>
+                <button type="button" onclick="Delete()" class="btn btn-primary">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        src = "https://cdn.jsdelivr.net/npm/sweetalert2@10"
+        function loadData() {
+                $.ajax({
+                    url: "/List/",
+                    data: JSON.stringify(object),
+                    type: "GET",
+                    contentType: "application/json;charset=utf-8",
+                    dataType: "json",
+                    success: function (item) {
+                        var items = '';
+                        $.each(data, function (i, item) {
+                            var rows = "<tr>"
+                                + "<td class ='prtoducttd'>" + item.Name + "</td>" + "</tr>";
+                            $('tbl1Student tbody').append(rows);
+                        });
+                    }
+                error: function (err) {
+                        alert(err.responseText)
+                    }
+                })
+        }
+
+        function ReadData(Name) {
+            $('#Name').css('border-color', 'lightgrey');
+            $.ajax({
+                url: "/Create/",
+                data: JSON.stringify(object),
+                type: "POST",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (res) {
+                    $('#Name').val(res.Name);
+                }
+                error: function (err) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: err.responseText,
+                        footer: '<a href>Why do I have this issue?</a>'
+                    })
+                }
+            });
+            return false;
+        }
+        function Submit() {
+                    var object = null;
+                    object.Name = $("#Name").val();
+                    $.ajax({
+                        url: "/Create/",
+                        data: JSON.stringify(object),
+                        type: "POST",
+                        contentType: "application/json;charset=utf-8",
+                        dataType: "json",
+                    }).then({
+                        success: function () {
+                            loadData();
+                        },
+                        error: function () {
+                            alert("Error when inserting");
+                        }
+                // update this spot (Has been Updated)
+                console.log(result);
+                    }).catch({
+{
+                            console.log(error);
+                        })
+                }
+
+        // Edit menggunakan Ajax
+        function Edit() {
+                    var res = validate();
+                    if (res == false) {
+                        return false;
+                    }
+                    var empObj = {
+                        Name: $('#Name').val();
+                    };
+                    $.ajax({
+                        url: "/Edit/",
+                        data: JSON.stringify(empObj),
+                        type: "POST",
+                        contentType: "application/json;charset=utf-8",
+                        dataType: "json",
+                        success: function (result) {
+                            loadData();
+                            $('#form-group').modal('hidden');
+                            $('#Name').val("");
+                        },
+                        error: function (err) {
+                            alert(err.responseText)
+                        }
+                    });
+                }
+        // Delete menggunakan Ajax & Sweetalert
+        function Delete(Name) {
+            var statement = confirm(Swal.fire({ 'Want to delete this items?', 'question'}));
+                    if (statement) {
+                        $.ajax({
+                            url: "/Delete/" + Name,
+                            type: "POST",
+                            contentType: "application/json;charset=utf-8",
+                            dataType: "json",
+                            success: function (result) {
+                                loadData();
+                            },
+                            error: function (err) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text:  err.responseText,
+                                    footer: '<a href>Why do I have this issue?</a>'
+                                })
+                            }
+                        });
+                    }
+        }
+
+    </script>
+}
